@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+dist/
+dist-ssr/
+*.local
+
+# IDES
+.vscode/
+.idea/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build outputs
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Uploads
+server/uploads/
+client/src/assets/uploads/
+
+# Stitch/Temporary files
+tmp/
+tmp_login.html
+download_html.js
+domain_reference_questions.html
