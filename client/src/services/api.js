@@ -60,7 +60,8 @@ export const uploads = {
   upload: (formData) => api.post('/uploads', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
-  delete: (id) => api.delete(`/uploads/${id}`)
+  delete: (id) => api.delete(`/uploads/${id}`),
+  download: (id) => api.get(`/uploads/${id}/download`, { responseType: 'blob' })
 };
 
 export const admin = {

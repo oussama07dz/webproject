@@ -116,7 +116,8 @@ const Evaluation = () => {
       }
     } catch (err) {
       console.error('Error saving answer:', err);
-      alert('Erreur lors de la sauvegarde');
+      const errorMessage = err.response?.data?.details || err.response?.data?.error || 'Erreur lors de la sauvegarde';
+      alert(`Erreur: ${errorMessage}`);
     } finally {
       setSaving(false);
     }
@@ -169,8 +170,32 @@ const Evaluation = () => {
     }
   };
 
-  const handleDownload = (file) => {
-    window.open(`/api/uploads/${file.id}/download`, '_blank');
+  const handleDownload = async (file) => {
+    try {
+      const response = await uploads.download(file.id);
+      
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = file.original_name || 'download';
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (filenameMatch && filenameMatch.length === 2) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      const blob = new Blob([response.data], { type: response.headers['content-type'] });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error downloading file:', err);
+      alert('Erreur lors du téléchargement. Veuillez réessayer.');
+    }
   };
 
   if (loading) {

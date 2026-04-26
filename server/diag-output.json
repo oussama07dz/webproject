@@ -1,0 +1,89 @@
+{
+  "env": {
+    "DB_NAME": "qa_platform",
+    "DB_USER": "postgres"
+  },
+  "context": {
+    "current_database": "qa_platform",
+    "current_user": "postgres",
+    "inet_server_addr": "::1",
+    "inet_server_port": 5432
+  },
+  "columns": [
+    {
+      "column_name": "id",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "character_maximum_length": null
+    },
+    {
+      "column_name": "answer_id",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "column_name": "filename",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "column_name": "original_name",
+      "data_type": "character varying",
+      "is_nullable": "NO",
+      "character_maximum_length": 255
+    },
+    {
+      "column_name": "file_type",
+      "data_type": "character varying",
+      "is_nullable": "YES",
+      "character_maximum_length": 255
+    },
+    {
+      "column_name": "file_size",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "column_name": "uploaded_at",
+      "data_type": "timestamp without time zone",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    },
+    {
+      "column_name": "file_data",
+      "data_type": "bytea",
+      "is_nullable": "YES",
+      "character_maximum_length": null
+    }
+  ],
+  "constraints": [
+    {
+      "conname": "uploads_id_not_null",
+      "contype": "n",
+      "remote_table": "-"
+    },
+    {
+      "conname": "uploads_filename_not_null",
+      "contype": "n",
+      "remote_table": "-"
+    },
+    {
+      "conname": "uploads_original_name_not_null",
+      "contype": "n",
+      "remote_table": "-"
+    },
+    {
+      "conname": "uploads_pkey",
+      "contype": "p",
+      "remote_table": "-"
+    },
+    {
+      "conname": "uploads_answer_id_fkey",
+      "contype": "f",
+      "remote_table": "???"
+    }
+  ]
+}

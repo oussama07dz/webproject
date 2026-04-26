@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { admin } from '../services/api';
+import { admin, uploads } from '../services/api';
 
 const AdminReview = () => {
   const [pending, setPending] = useState([]);
@@ -55,8 +55,32 @@ const AdminReview = () => {
     }
   };
 
-  const handleDownload = (fileId) => {
-    window.open(`/api/uploads/${fileId}/download`, '_blank');
+  const handleDownload = async (fileId) => {
+    try {
+      const response = await uploads.download(fileId);
+      
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = 'download';
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (filenameMatch && filenameMatch.length === 2) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      const blob = new Blob([response.data], { type: response.headers['content-type'] });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error downloading file:', err);
+      alert('Erreur lors du téléchargement. Veuillez réessayer.');
+    }
   };
 
   if (loading) {
