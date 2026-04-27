@@ -57,3 +57,17 @@ body {
 .badge-rejected {
   @apply bg-red-100 text-red-800;
 }
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.editorial-shadow {
+  box-shadow: 0 12px 40px rgba(25, 27, 35, 0.08);
+}

@@ -84,7 +84,7 @@ CREATE TABLE uploads (
     answer_id INT REFERENCES answers(id) ON DELETE CASCADE,
     filename VARCHAR(255) NOT NULL,
     original_name VARCHAR(255) NOT NULL,
-    filepath VARCHAR(500) NOT NULL,
+    file_data BYTEA,
     file_type VARCHAR(50),
     file_size INT,
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

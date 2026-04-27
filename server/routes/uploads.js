@@ -8,19 +8,7 @@ const { auth } = require('../middleware/auth');
 
 const router = express.Router();
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = `${Date.now()}_${uuidv4()}${path.extname(file.originalname)}`;
-    cb(null, uniqueName);
-  }
-});
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
   const allowedTypes = [
@@ -57,7 +45,6 @@ router.post('/', auth, upload.single('file'), async (req, res) => {
     }
 
     if (!answer_id) {
-      fs.unlinkSync(req.file.path);
       return res.status(400).json({ error: 'Answer ID is required' });
     }
 
@@ -67,23 +54,26 @@ router.post('/', auth, upload.single('file'), async (req, res) => {
     );
 
     if (answerCheck.rows.length === 0) {
-      fs.unlinkSync(req.file.path);
       return res.status(404).json({ error: 'Answer not found' });
     }
 
     if (answerCheck.rows[0].status === 'approved') {
-      fs.unlinkSync(req.file.path);
       return res.status(403).json({ error: 'Cannot upload to approved answer' });
     }
 
+    const columnsQuery = await pool.query("SELECT column_name FROM information_schema.columns WHERE table_name = 'uploads'");
+    console.log('Runtime columns:', columnsQuery.rows.map(r => r.column_name));
+
+    const uniqueName = `${Date.now()}_${uuidv4()}${path.extname(req.file.originalname)}`;
+    
     const result = await pool.query(
-      `INSERT INTO uploads (answer_id, filename, original_name, filepath, file_type, file_size)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      `INSERT INTO uploads (answer_id, filename, original_name, file_data, file_type, file_size)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, answer_id, filename, original_name, file_type, file_size, uploaded_at`,
       [
         answer_id,
-        req.file.filename,
+        uniqueName,
         req.file.originalname,
-        `/uploads/${req.file.filename}`,
+        req.file.buffer,
         req.file.mimetype,
         req.file.size
       ]
@@ -92,7 +82,7 @@ router.post('/', auth, upload.single('file'), async (req, res) => {
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error('Upload error:', err);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 
@@ -123,11 +113,6 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(403).json({ error: 'Cannot delete file from approved answer' });
     }
 
-    const filepath = path.join(__dirname, '..', upload.filepath);
-    if (fs.existsSync(filepath)) {
-      fs.unlinkSync(filepath);
-    }
-
     await pool.query('DELETE FROM uploads WHERE id = $1', [id]);
 
     res.json({ message: 'File deleted' });
@@ -141,19 +126,17 @@ router.get('/:id/download', auth, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await pool.query('SELECT * FROM uploads WHERE id = $1', [id]);
+    const result = await pool.query('SELECT original_name, file_type, file_data FROM uploads WHERE id = $1', [id]);
 
-    if (result.rows.length === 0) {
+    if (result.rows.length === 0 || !result.rows[0].file_data) {
       return res.status(404).json({ error: 'File not found' });
     }
 
-    const filepath = path.join(__dirname, '..', result.rows[0].filepath);
+    const file = result.rows[0];
     
-    if (!fs.existsSync(filepath)) {
-      return res.status(404).json({ error: 'File not found on server' });
-    }
-
-    res.download(filepath, result.rows[0].original_name);
+    res.setHeader('Content-Disposition', `attachment; filename="${file.original_name}"`);
+    res.setHeader('Content-Type', file.file_type || 'application/octet-stream');
+    res.send(file.file_data);
   } catch (err) {
     console.error('Download error:', err);
     res.status(500).json({ error: 'Server error' });
