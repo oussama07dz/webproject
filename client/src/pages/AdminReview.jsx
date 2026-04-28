@@ -58,7 +58,7 @@ const AdminReview = () => {
   const handleDownload = async (fileId) => {
     try {
       const response = await uploads.download(fileId);
-      
+
       const contentDisposition = response.headers['content-disposition'];
       let filename = 'download';
       if (contentDisposition) {
@@ -88,12 +88,12 @@ const AdminReview = () => {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Révisions en attente</h1>
+    <div className="max-w-[1440px] mx-auto space-y-8">
+      <h1 className="font-h1 text-h1 text-on-background">Révisions en attente</h1>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="card">
-          <h2 className="font-semibold mb-4">Réponses en attente ({pending.length})</h2>
+      <div className="grid gap-8 lg:grid-cols-2">
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+          <h2 className="font-h3 text-h3 text-on-background mb-6">Réponses en attente ({pending.length})</h2>
           <div className="space-y-3">
             {pending.length === 0 ? (
               <p className="text-gray-500 text-center py-8">Aucune réponse en attente</p>
@@ -102,9 +102,8 @@ const AdminReview = () => {
                 <div
                   key={item.id}
                   onClick={() => handleSelectAnswer(item.id)}
-                  className={`p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors ${
-                    selectedAnswer?.id === item.id ? 'border-primary-500 bg-primary-50' : 'border-gray-200'
-                  }`}
+                  className={`p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors ${selectedAnswer?.id === item.id ? 'border-primary-500 bg-primary-50' : 'border-gray-200'
+                    }`}
                 >
                   <div className="flex justify-between items-start">
                     <div>
@@ -125,21 +124,24 @@ const AdminReview = () => {
           </div>
         </div>
 
-        <div className="card">
-          <h2 className="font-semibold mb-4">
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+          <h2 className="font-h3 text-h3 text-on-background mb-6">
             {selectedAnswer ? 'Détails de la réponse' : 'Sélectionnez une réponse'}
           </h2>
-          
+
           {!selectedAnswer ? (
             <div className="text-center py-12 text-gray-500">
               Cliquez sur une réponse pour voir les détails
             </div>
           ) : (
             <div>
-              <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-                <p className="text-xs text-gray-500 mb-1">Question</p>
-                <p className="font-medium">{selectedAnswer.question_text}</p>
-                <p className="text-sm text-gray-500 mt-2">Domaine {selectedAnswer.domain_number} - {selectedAnswer.champ_code} - {selectedAnswer.ref_code}</p>
+              <div className="mb-6 p-6 bg-slate-50 border border-slate-200 rounded-xl">
+                <p className="font-label-sm text-label-sm text-on-surface-variant uppercase mb-2">Question</p>
+                <p className="font-manrope font-bold text-lg text-on-background">{selectedAnswer.question_text}</p>
+                <p className="font-caption text-caption text-on-surface-variant mt-3 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-sm">label</span>
+                  Domaine {selectedAnswer.domain_number} - {selectedAnswer.champ_code} - {selectedAnswer.ref_code}
+                </p>
               </div>
 
               <div className="mb-4">

@@ -26,7 +26,12 @@ const Statistics = () => {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64">Chargement...</div>;
+    return (
+      <div className="flex items-center justify-center h-64 text-slate-500">
+        <span className="material-symbols-outlined animate-spin text-4xl mr-3">autorenew</span>
+        <span className="font-manrope text-xl font-bold">Chargement...</span>
+      </div>
+    );
   }
 
   const yesCount = parseInt(overview?.totals?.yes_count || 0);
@@ -58,108 +63,112 @@ const Statistics = () => {
     datasets: [{
       label: 'Questions répondues',
       data: overview?.domains?.map(d => d.answered_questions) || [],
-      backgroundColor: '#3b82f6'
+      backgroundColor: '#016e1c'
     }, {
       label: 'Total questions',
       data: overview?.domains?.map(d => d.questions_count) || [],
-      backgroundColor: '#e5e7eb'
+      backgroundColor: '#e2e8f0'
     }]
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Statistiques - Année {year}</h1>
+    <div className="max-w-[1440px] mx-auto space-y-10">
+      <div className="flex flex-col gap-2">
+        <h1 className="font-h1 text-h1 text-on-background">Statistiques - Année {year}</h1>
+        <p className="font-body-md text-body-md text-on-surface-variant">Visualisation détaillée des performances et du statut des évaluations.</p>
+      </div>
 
-      <div className="grid gap-6 md:grid-cols-4 mb-8">
-        <div className="card">
-          <p className="text-sm text-gray-500">Total répondu</p>
-          <p className="text-3xl font-bold text-gray-900">
-            {yesCount + noCount}
-          </p>
+      {/* Buffed Stats Cards */}
+      <div className="grid gap-8 md:grid-cols-4">
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+          <p className="font-label-sm text-label-sm text-on-surface-variant uppercase mb-2">Total répondu</p>
+          <p className="font-h1 text-5xl font-black text-on-background">{yesCount + noCount}</p>
         </div>
-        <div className="card">
-          <p className="text-sm text-gray-500">Oui</p>
-          <p className="text-3xl font-bold text-green-600">{yesCount}</p>
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+          <p className="font-label-sm text-label-sm text-on-surface-variant uppercase mb-2">Total "Oui"</p>
+          <p className="font-h1 text-5xl font-black text-green-600">{yesCount}</p>
         </div>
-        <div className="card">
-          <p className="text-sm text-gray-500">Non</p>
-          <p className="text-3xl font-bold text-red-600">{noCount}</p>
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+          <p className="font-label-sm text-label-sm text-on-surface-variant uppercase mb-2">Total "Non"</p>
+          <p className="font-h1 text-5xl font-black text-red-600">{noCount}</p>
         </div>
-        <div className="card">
-          <p className="text-sm text-gray-500">En attente</p>
-          <p className="text-3xl font-bold text-yellow-600">{pendingCount}</p>
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+          <p className="font-label-sm text-label-sm text-on-surface-variant uppercase mb-2">En attente</p>
+          <p className="font-h1 text-5xl font-black text-yellow-600">{pendingCount}</p>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 mb-8">
-        <div className="card">
-          <h3 className="font-semibold mb-4">Répartition Oui/Non</h3>
+      <div className="grid gap-8 md:grid-cols-2">
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+          <h3 className="font-h3 text-h3 mb-6 text-on-background">Répartition Oui/Non</h3>
           <div className="h-64">
             <Pie data={yesNoData} options={{ maintainAspectRatio: false }} />
           </div>
         </div>
-        <div className="card">
-          <h3 className="font-semibold mb-4">Statut des réponses</h3>
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+          <h3 className="font-h3 text-h3 mb-6 text-on-background">Statut des réponses</h3>
           <div className="h-64">
             <Pie data={statusData} options={{ maintainAspectRatio: false }} />
           </div>
         </div>
       </div>
 
-      <div className="card">
-        <h3 className="font-semibold mb-4">Progression par Domaine</h3>
+      <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+        <h3 className="font-h3 text-h3 mb-6 text-on-background">Progression par Domaine</h3>
         <div className="h-80">
-          <Bar 
-            data={domainData} 
-            options={{ 
+          <Bar
+            data={domainData}
+            options={{
               maintainAspectRatio: false,
               scales: {
                 y: { beginAtZero: true }
               }
-            }} 
+            }}
           />
         </div>
       </div>
 
-      <div className="mt-8 card">
-        <h3 className="font-semibold mb-4">Détails par Domaine</h3>
-        <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="text-left px-4 py-2">Domaine</th>
-              <th className="text-left px-4 py-2">Champs</th>
-              <th className="text-left px-4 py-2">Questions</th>
-              <th className="text-left px-4 py-2">Répondus</th>
-              <th className="text-left px-4 py-2">Progression</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {overview?.domains?.map(domain => {
-              const progress = domain.questions_count > 0 
-                ? Math.round((domain.answered_questions / domain.questions_count) * 100) 
-                : 0;
-              return (
-                <tr key={domain.id}>
-                  <td className="px-4 py-2 font-medium">D{domain.domain_number}</td>
-                  <td className="px-4 py-2">{domain.champs_count}</td>
-                  <td className="px-4 py-2">{domain.questions_count}</td>
-                  <td className="px-4 py-2">{domain.answered_questions}</td>
-                  <td className="px-4 py-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-24 bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-primary-600 h-2 rounded-full" 
-                          style={{ width: `${progress}%` }}
-                        />
+      <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+        <h3 className="font-h3 text-h3 mb-6 text-on-background">Détails par Domaine</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th className="text-left px-6 py-4 font-label-sm text-label-sm text-on-surface-variant uppercase">Domaine</th>
+                <th className="text-left px-6 py-4 font-label-sm text-label-sm text-on-surface-variant uppercase">Champs</th>
+                <th className="text-left px-6 py-4 font-label-sm text-label-sm text-on-surface-variant uppercase">Questions</th>
+                <th className="text-left px-6 py-4 font-label-sm text-label-sm text-on-surface-variant uppercase">Répondus</th>
+                <th className="text-left px-6 py-4 font-label-sm text-label-sm text-on-surface-variant uppercase">Progression</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 font-body-md text-body-md">
+              {overview?.domains?.map(domain => {
+                const progress = domain.questions_count > 0
+                  ? Math.round((domain.answered_questions / domain.questions_count) * 100)
+                  : 0;
+                return (
+                  <tr key={domain.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4 font-bold text-on-background">D{domain.domain_number}</td>
+                    <td className="px-6 py-4 text-on-surface-variant">{domain.champs_count}</td>
+                    <td className="px-6 py-4 text-on-surface-variant">{domain.questions_count}</td>
+                    <td className="px-6 py-4 text-on-surface-variant">{domain.answered_questions}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 bg-slate-100 rounded-full h-2">
+                          <div
+                            className="bg-secondary h-2 rounded-full transition-all duration-1000"
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                        <span className="font-bold text-on-background w-12">{progress}%</span>
                       </div>
-                      <span className="text-sm">{progress}%</span>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

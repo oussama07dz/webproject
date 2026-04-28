@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { admin, stats } from '../services/api';
+import { admin as adminService, stats } from '../services/api';
 
 const AdminDashboard = () => {
   const [pendingCount, setPendingCount] = useState(0);
@@ -14,7 +14,7 @@ const AdminDashboard = () => {
   const fetchData = async () => {
     try {
       const [pendingRes, statsRes] = await Promise.all([
-        admin.getPending(),
+        adminService.getPending(),
         stats.getOverview(new Date().getFullYear())
       ]);
       setPendingCount(pendingRes.data.length);
@@ -27,76 +27,160 @@ const AdminDashboard = () => {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64">Chargement...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="flex items-center gap-3 text-slate-500">
+          <span className="material-symbols-outlined animate-spin text-4xl">autorenew</span>
+          <span className="font-manrope text-xl font-bold">Chargement...</span>
+        </div>
+      </div>
+    );
   }
 
-  return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
+  const totalUsers = (overview?.totals?.approved_count || 0) + (overview?.totals?.rejected_count || 0);
 
-      <div className="grid gap-6 md:grid-cols-4 mb-8">
-        <Link to="/admin/review" className="card hover:shadow-md transition-shadow">
-          <p className="text-sm text-gray-500">En attente de révision</p>
-          <p className="text-3xl font-bold text-yellow-600">{pendingCount}</p>
+  return (
+    <div className="max-w-[1440px] mx-auto space-y-10">
+      {/* Page Header */}
+      <div className="flex flex-col gap-2">
+        <h1 className="font-h1 text-h1 text-on-background tracking-tight">Vue d'ensemble Admin</h1>
+        <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl">
+          Suivez les performances globales, gérez les révisions en attente et contrôlez l'accès au système depuis votre tableau de bord centralisé.
+        </p>
+      </div>
+
+      {/* High-Impact Stats Row */}
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+        {/* Pending Reviews Card */}
+        <Link
+          to="/admin/review"
+          className="group relative bg-[#fffbe6] border-2 border-[#ffe58f] p-8 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden"
+        >
+          <div className="relative z-10 flex flex-col justify-between h-full">
+            <div className="flex justify-between items-start mb-6">
+              <span className="material-symbols-outlined text-4xl text-[#d48806]">pending_actions</span>
+              <span className="material-symbols-outlined text-xl text-[#d48806] opacity-0 group-hover:opacity-100 transition-opacity">arrow_forward</span>
+            </div>
+            <div>
+              <p className="font-label-sm text-label-sm text-[#874d00] uppercase tracking-widest mb-2 font-bold">Révisions en attente</p>
+              <h3 className="font-h1 text-5xl font-black text-[#d48806]">{pendingCount}</h3>
+            </div>
+          </div>
+          <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            <span className="material-symbols-outlined text-9xl">pending_actions</span>
+          </div>
         </Link>
-        <div className="card">
-          <p className="text-sm text-gray-500">Total utilisateurs</p>
-          <p className="text-3xl font-bold text-gray-900">
-            {overview?.totals?.approved_count + overview?.totals?.rejected_count || 0}
-          </p>
+
+        {/* Total Users Card */}
+        <div className="group relative bg-slate-900 border-2 border-slate-800 p-8 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden text-white">
+          <div className="relative z-10 flex flex-col justify-between h-full">
+            <div className="flex justify-between items-start mb-6">
+              <span className="material-symbols-outlined text-4xl text-slate-300">group</span>
+            </div>
+            <div>
+              <p className="font-label-sm text-label-sm text-slate-400 uppercase tracking-widest mb-2 font-bold">Total des Évaluations</p>
+              <h3 className="font-h1 text-5xl font-black">{totalUsers}</h3>
+            </div>
+          </div>
+          <div className="absolute -right-4 -bottom-4 opacity-10">
+            <span className="material-symbols-outlined text-9xl">group</span>
+          </div>
         </div>
-        <div className="card">
-          <p className="text-sm text-gray-500">Approuvés</p>
-          <p className="text-3xl font-bold text-green-600">{overview?.totals?.approved_count || 0}</p>
+
+        {/* Approved Card */}
+        <div className="group relative bg-[#f6ffed] border-2 border-[#b7eb8f] p-8 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden text-[#016e1c]">
+          <div className="relative z-10 flex flex-col justify-between h-full">
+            <div className="flex justify-between items-start mb-6">
+              <span className="material-symbols-outlined text-4xl">task_alt</span>
+            </div>
+            <div>
+              <p className="font-label-sm text-label-sm text-[#016e1c] opacity-70 uppercase tracking-widest mb-2 font-bold">Total Approuvé</p>
+              <h3 className="font-h1 text-5xl font-black">{overview?.totals?.approved_count || 0}</h3>
+            </div>
+          </div>
+          <div className="absolute -right-4 -bottom-4 opacity-5">
+            <span className="material-symbols-outlined text-9xl">task_alt</span>
+          </div>
         </div>
-        <div className="card">
-          <p className="text-sm text-gray-500">Rejetés</p>
-          <p className="text-3xl font-bold text-red-600">{overview?.totals?.rejected_count || 0}</p>
+
+        {/* Rejected Card */}
+        <div className="group relative bg-[#fff1f0] border-2 border-[#ffa39e] p-8 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden text-[#cf1322]">
+          <div className="relative z-10 flex flex-col justify-between h-full">
+            <div className="flex justify-between items-start mb-6">
+              <span className="material-symbols-outlined text-4xl">cancel</span>
+            </div>
+            <div>
+              <p className="font-label-sm text-label-sm text-[#cf1322] opacity-70 uppercase tracking-widest mb-2 font-bold">Total Rejeté</p>
+              <h3 className="font-h1 text-5xl font-black">{overview?.totals?.rejected_count || 0}</h3>
+            </div>
+          </div>
+          <div className="absolute -right-4 -bottom-4 opacity-5">
+            <span className="material-symbols-outlined text-9xl">cancel</span>
+          </div>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <Link to="/admin/review" className="card hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="font-semibold">Révisions</h3>
-              <p className="text-sm text-gray-500">Voir les réponses en attente</p>
-            </div>
+      {/* Navigation Shortcuts Grid */}
+      <div className="grid gap-8 md:grid-cols-3">
+        {/* Review Shortcut */}
+        <Link
+          to="/admin/review"
+          className="group flex items-center gap-6 p-8 bg-white border-2 border-slate-100 rounded-2xl hover:border-[#016e1c] hover:shadow-lg transition-all"
+        >
+          <div className="w-20 h-20 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+            <span className="material-symbols-outlined text-4xl">rate_review</span>
+          </div>
+          <div>
+            <h3 className="font-h3 text-h3 text-on-background mb-1">Centre de Révision</h3>
+            <p className="font-body-md text-body-md text-on-surface-variant leading-tight">Traitez les réponses en attente de validation.</p>
           </div>
         </Link>
 
-        <Link to="/admin/users" className="card hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="font-semibold">Utilisateurs</h3>
-              <p className="text-sm text-gray-500">Gérer les utilisateurs</p>
-            </div>
+        {/* Users Shortcut */}
+        <Link
+          to="/admin/users"
+          className="group flex items-center gap-6 p-8 bg-white border-2 border-slate-100 rounded-2xl hover:border-[#016e1c] hover:shadow-lg transition-all"
+        >
+          <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+            <span className="material-symbols-outlined text-4xl">manage_accounts</span>
+          </div>
+          <div>
+            <h3 className="font-h3 text-h3 text-on-background mb-1">Utilisateurs</h3>
+            <p className="font-body-md text-body-md text-on-surface-variant leading-tight">Gérez les comptes, rôles et privilèges d'accès.</p>
           </div>
         </Link>
 
-        <Link to="/admin/structures" className="card hover:shadow-md transition-shadow">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="font-semibold">Structures</h3>
-              <p className="text-sm text-gray-500">Gérer domaines, champs, questions</p>
-            </div>
+        {/* Structures Shortcut */}
+        <Link
+          to="/admin/structures"
+          className="group flex items-center gap-6 p-8 bg-white border-2 border-slate-100 rounded-2xl hover:border-[#016e1c] hover:shadow-lg transition-all"
+        >
+          <div className="w-20 h-20 bg-[#f6ffed] text-[#016e1c] rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+            <span className="material-symbols-outlined text-4xl">schema</span>
+          </div>
+          <div>
+            <h3 className="font-h3 text-h3 text-on-background mb-1">Architecture</h3>
+            <p className="font-body-md text-body-md text-on-surface-variant leading-tight">Configurez les domaines et questions d'évaluation.</p>
           </div>
         </Link>
+      </div>
+
+      {/* Audit Banner */}
+      <div className="bg-[#191c1e] p-10 rounded-2xl text-white flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
+        <div className="relative z-10 flex flex-col gap-2 flex-1">
+          <h2 className="font-h2 text-h2 mb-2">Synthèse Annuelle {new Date().getFullYear()}</h2>
+          <p className="text-slate-400 font-body-lg text-body-lg max-w-xl">
+            Retrouvez les statistiques détaillées et les rapports d'évaluation exportables depuis la section <Link to="/statistics" className="text-secondary font-bold hover:underline">Statistiques</Link>.
+          </p>
+        </div>
+        <div className="relative z-10 flex gap-4">
+          <button className="px-8 py-4 bg-secondary text-white rounded-xl font-bold hover:brightness-110 transition-all text-sm uppercase tracking-widest">
+            Exporter Rapport
+          </button>
+        </div>
+        <div className="absolute -right-20 -bottom-20 opacity-10">
+          <span className="material-symbols-outlined text-[300px]">auto_graph</span>
+        </div>
       </div>
     </div>
   );
