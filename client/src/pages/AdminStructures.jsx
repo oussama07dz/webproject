@@ -289,9 +289,9 @@ const AdminStructures = () => {
         <div>
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">Domaines</h1>
-            <button onClick={() => openModal('domain')} className="btn btn-primary">
+            {/* <button onClick={() => openModal('domain')} className="btn btn-primary">
               + Ajouter un domaine
-            </button>
+            </button> */}
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {domainsList.map(domain => (
@@ -308,12 +308,12 @@ const AdminStructures = () => {
                   >
                     Voir Champs
                   </button>
-                  <button
+                  {/* <button
                     onClick={() => openModal('domain', domain)}
                     className="btn btn-secondary"
                   >
                     Modifier
-                  </button>
+                  </button> */}
                 </div>
               </div>
             ))}
@@ -328,9 +328,9 @@ const AdminStructures = () => {
           </button>
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">Champs - {selectedDomain?.title?.substring(0, 30)}</h1>
-            <button onClick={() => { if (selectedDomain?.id) openModal('champ'); else alert('Veuillez sélectionner un domaine'); }} className="btn btn-primary">
+            {/* <button onClick={() => { if (selectedDomain?.id) openModal('champ'); else alert('Veuillez sélectionner un domaine'); }} className="btn btn-primary">
               + Ajouter un champ
-            </button>
+            </button> */}
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             {champs.map(champ => (
@@ -346,12 +346,12 @@ const AdminStructures = () => {
                   >
                     Voir Références
                   </button>
-                  <button
+                  {/* <button
                     onClick={() => openModal('champ', champ)}
                     className="btn btn-secondary"
                   >
                     Modifier
-                  </button>
+                  </button> */}
                 </div>
               </div>
             ))}
@@ -366,9 +366,9 @@ const AdminStructures = () => {
           </button>
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">Références - {selectedChamp?.title?.substring(0, 30)}</h1>
-            <button onClick={() => openModal('ref')} className="btn btn-primary">
+            {/* <button onClick={() => openModal('ref')} className="btn btn-primary">
               + Ajouter une référence
-            </button>
+            </button> */}
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             {refs.map(ref => (
@@ -385,12 +385,12 @@ const AdminStructures = () => {
                   >
                     Voir Questions
                   </button>
-                  <button
+                  {/* <button
                     onClick={() => openModal('ref', ref)}
                     className="btn btn-secondary"
                   >
                     Modifier
-                  </button>
+                  </button> */}
                 </div>
               </div>
             ))}
@@ -405,9 +405,9 @@ const AdminStructures = () => {
           </button>
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">Questions - {selectedRef?.title?.substring(0, 30)}</h1>
-            <button onClick={() => openModal('question')} className="btn btn-primary">
+            {/* <button onClick={() => openModal('question')} className="btn btn-primary">
               + Ajouter une question
-            </button>
+            </button> */}
           </div>
           <div className="space-y-4">
             {questions.map(q => (
@@ -415,12 +415,12 @@ const AdminStructures = () => {
                 <div className="flex justify-between items-start mb-2">
                   <span className="font-medium text-primary-600">{q.question_code}</span>
                   <div className="flex gap-2">
-                    <button
+                    {/* <button
                       onClick={() => openModal('question', q)}
                       className="text-primary-600 hover:text-primary-800 text-sm"
                     >
                       Modifier
-                    </button>
+                    </button> */}
                   </div>
                 </div>
                 <p className="font-semibold mb-2">{q.question_text}</p>

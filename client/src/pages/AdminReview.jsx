@@ -3,6 +3,7 @@ import { admin, uploads } from '../services/api';
 
 const AdminReview = () => {
   const [pending, setPending] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [reviewing, setReviewing] = useState(false);
@@ -87,18 +88,46 @@ const AdminReview = () => {
     return <div className="flex items-center justify-center h-64">Chargement...</div>;
   }
 
+  const filteredPending = pending.filter(item => {
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase().trim();
+
+    const answerText = item.answer ? 'yes' : 'no';
+    const answerTextFr = item.answer ? 'oui' : 'non';
+
+    return (
+      (item.user_role && item.user_role.toLowerCase().includes(term)) ||
+      (item.ref_code && item.ref_code.toLowerCase().includes(term)) ||
+      (item.question_code && item.question_code.toLowerCase().includes(term)) ||
+      answerText === term ||
+      answerTextFr === term
+    );
+  });
+
   return (
     <div className="max-w-[1440px] mx-auto space-y-8">
       <h1 className="font-h1 text-h1 text-on-background">Révisions en attente</h1>
 
       <div className="grid gap-8 lg:grid-cols-2">
         <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-          <h2 className="font-h3 text-h3 text-on-background mb-6">Réponses en attente ({pending.length})</h2>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <h2 className="font-h3 text-h3 text-on-background">Réponses en attente ({filteredPending.length})</h2>
+            <div className="relative w-full sm:w-64">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+              <input
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#016e1c] focus:border-transparent outline-none transition-all"
+                placeholder="Rôle, réf, oui/non..."
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
           <div className="space-y-3">
-            {pending.length === 0 ? (
+            {filteredPending.length === 0 ? (
               <p className="text-gray-500 text-center py-8">Aucune réponse en attente</p>
             ) : (
-              pending.map(item => (
+              filteredPending.map(item => (
                 <div
                   key={item.id}
                   onClick={() => handleSelectAnswer(item.id)}

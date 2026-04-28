@@ -1,4 +1,4 @@
-# QA Evaluation Platform
+# Plateforme d'évaluation de la qualité - univ-biskra
 
 Interactive web platform for Quality Assurance evaluation in higher education institutions.
 

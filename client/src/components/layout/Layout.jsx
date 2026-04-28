@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useState, useEffect } from 'react';
 import { notifications } from '../../services/api';
 import bgImage from '../../assets/background.png';
+import logoImage from '../../assets/UMKBiskra_Logo.png';
 
 const Layout = () => {
   const { user, logout } = useAuth();
@@ -63,13 +64,11 @@ const Layout = () => {
       {/* Sidebar */}
       <aside className="w-[260px] min-w-[260px] h-full border-r border-slate-200 bg-slate-50 z-50 flex flex-col p-6 overflow-y-auto">
         {/* Logo */}
-        <div className="mb-10 flex items-center gap-3">
-          <div className="w-8 h-8 bg-[#0b7320] rounded-lg flex items-center justify-center">
-            <span className="material-symbols-outlined text-white text-sm">auto_graph</span>
-          </div>
-          <div>
-            <h1 className="text-lg font-extrabold tracking-tight text-slate-900">QualityMetrics</h1>
-            <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Enterprise Suite</p>
+        <div className="mb-10 flex flex-col items-center gap-3">
+          <img src={logoImage} alt="UMK Biskra Logo" className="w-[120px] h-auto object-contain" />
+          <div className="text-center mt-2">
+            <h1 className="text-[15px] font-extrabold tracking-tight text-slate-900 leading-snug">Plateforme d'évaluation<br />de la qualité</h1>
+            <p className="text-[10px] uppercase tracking-widest text-[#016e1c] font-black mt-1">univ-biskra</p>
           </div>
         </div>
 
@@ -146,7 +145,7 @@ const Layout = () => {
             </button>
 
             {showNotifications && (
-              <div className="absolute bottom-full left-0 w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-50 mb-2">
+              <div className="fixed bottom-12 left-[280px] w-96 bg-white rounded-xl shadow-2xl border border-slate-200 z-[100] mb-2 transform">
                 <div className="p-3 border-b border-slate-100">
                   <h3 className="font-semibold text-slate-900 text-sm">Notifications</h3>
                 </div>
@@ -192,33 +191,6 @@ const Layout = () => {
 
       {/* Main area */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top header bar */}
-        <header className="h-16 bg-slate-900 flex items-center justify-between px-8 z-40 border-b border-white/10 shadow-sm flex-shrink-0">
-          <div className="flex items-center gap-6">
-            <div className="relative flex items-center">
-              <span className="material-symbols-outlined absolute left-3 text-slate-400 text-lg">search</span>
-              <input
-                className="bg-white/5 border-none rounded-lg pl-10 pr-4 py-2 text-white placeholder-slate-400 focus:ring-1 focus:ring-[#016e1c] w-56 text-sm transition-all outline-none"
-                placeholder="Rechercher..."
-                type="text"
-              />
-            </div>
-          </div>
-
-          {/* <div className="flex items-center gap-4">
-            <button className="text-slate-400 hover:text-white transition-colors">
-              <span className="material-symbols-outlined">apps</span>
-            </button>
-            <div className="h-6 w-px bg-white/10"></div>
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <p className="text-white font-semibold leading-none text-sm">{user?.full_name || user?.username}</p>
-                <p className="text-[10px] text-slate-400 capitalize mt-0.5">{user?.role?.replace('_', ' ')}</p>
-              </div> 
-            </div>
-          </div> */}
-
-        </header>
 
         <main
           className="flex-1 overflow-y-auto"

@@ -89,7 +89,7 @@ const Dashboard = () => {
 
             <Link
               to={`/evaluation/${domain.id}`}
-              className="btn btn-primary w-full text-center block"
+              className="w-full bg-[#016e1c] hover:bg-[#0b7320] text-white font-bold py-3 px-4 rounded-lg text-center block transition-colors"
             >
               Commencer l'évaluation
             </Link>
