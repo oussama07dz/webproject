@@ -39,6 +39,54 @@ const AdminDashboard = () => {
 
   const totalUsers = (overview?.totals?.approved_count || 0) + (overview?.totals?.rejected_count || 0);
 
+  const handleExport = () => {
+    if (!overview) return;
+    const year = new Date().getFullYear();
+    const csvRows = [];
+    
+    // Derived values for summary
+    const yesCount = parseInt(overview?.totals?.yes_count || 0);
+    const noCount = parseInt(overview?.totals?.no_count || 0);
+    const pendingCount = parseInt(overview?.totals?.pending_count || 0);
+    const approvedCount = parseInt(overview?.totals?.approved_count || 0);
+    const rejectedCount = parseInt(overview?.totals?.rejected_count || 0);
+
+    // Header
+    csvRows.push(`Rapport d'Evaluation - Année ${year}`);
+    csvRows.push('');
+
+    // Summary Totals
+    csvRows.push('RESUME DES STATISTIQUES');
+    csvRows.push(`Total repondu,${yesCount + noCount}`);
+    csvRows.push(`Total Oui,${yesCount}`);
+    csvRows.push(`Total Non,${noCount}`);
+    csvRows.push(`En attente,${pendingCount}`);
+    csvRows.push(`Approuves,${approvedCount}`);
+    csvRows.push(`Rejetes,${rejectedCount}`);
+    csvRows.push('');
+
+    // Domain Details
+    csvRows.push('DETAILS PAR DOMAINE');
+    csvRows.push('Domaine,Titre,Champs,Questions,Repondus,Progression (%)');
+
+    overview.domains?.forEach(domain => {
+      const progress = domain.questions_count > 0
+        ? Math.round((domain.answered_questions / domain.questions_count) * 100)
+        : 0;
+      csvRows.push(`D${domain.domain_number},"${domain.title}",${domain.champs_count},${domain.questions_count},${domain.answered_questions},${progress}%`);
+    });
+
+    const csvString = csvRows.join('\n');
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `rapport_evaluation_${year}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="max-w-[1440px] mx-auto space-y-10">
       {/* Page Header */}
@@ -174,7 +222,10 @@ const AdminDashboard = () => {
           </p>
         </div>
         <div className="relative z-10 flex gap-4">
-          <button className="px-8 py-4 bg-secondary text-white rounded-xl font-bold hover:brightness-110 transition-all text-sm uppercase tracking-widest">
+          <button
+            onClick={handleExport}
+            className="px-8 py-4 bg-secondary text-white rounded-xl font-bold hover:brightness-110 transition-all text-sm uppercase tracking-widest"
+          >
             Exporter Rapport
           </button>
         </div>
@@ -184,6 +235,7 @@ const AdminDashboard = () => {
       </div>
     </div>
   );
+
 };
 
 export default AdminDashboard;
