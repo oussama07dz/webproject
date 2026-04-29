@@ -1,4 +1,4 @@
-# Plateforme d'évaluation de la qualité - univ-biskra
+# Plateforme d'évaluation de la qualité 
 
 Interactive web platform for Quality Assurance evaluation in higher education institutions.
 
