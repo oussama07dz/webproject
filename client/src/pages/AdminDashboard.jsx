@@ -42,10 +42,10 @@ const AdminDashboard = () => {
   return (
     <div className="max-w-[1440px] mx-auto space-y-10">
       {/* Page Header */}
-      <div className="flex flex-col gap-2">
-        <h1 className="font-h1 text-h1 text-on-background tracking-tight">Vue d'ensemble Admin</h1>
-        <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl">
-          Suivez les performances globales, gérez les révisions en attente et contrôlez l'accès au système depuis votre tableau de bord centralisé.
+      <div className="flex flex-col gap-3">
+        <h1 className="font-h1 text-h1 text-on-background tracking-tight">Centre de Supervision Stratégique</h1>
+        <p className="font-body-md text-body-md text-on-surface-variant max-w-3xl leading-relaxed">
+          Pilotez l'intégrité de la plateforme : analysez les performances globales en temps réel, traitez efficacement les évaluations en attente et orchestrez les privilèges d'accès depuis votre environnement de contrôle unifié.
         </p>
       </div>
 

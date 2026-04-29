@@ -77,17 +77,17 @@ const Layout = () => {
           {!isAdmin && (
             <>
               <NavLink to="/dashboard" className={navLinkClass}>
-                <span className="material-symbols-outlined text-xl">dashboard</span>
+                <span translate="no" className="material-symbols-outlined text-xl">dashboard</span>
                 Dashboard
               </NavLink>
 
               <NavLink to="/my-answers" className={navLinkClass}>
-                <span className="material-symbols-outlined text-xl">fact_check</span>
+                <span translate="no" className="material-symbols-outlined text-xl">fact_check</span>
                 Mes Réponses
               </NavLink>
 
               <NavLink to="/statistics" className={navLinkClass}>
-                <span className="material-symbols-outlined text-xl">analytics</span>
+                <span translate="no" className="material-symbols-outlined text-xl">analytics</span>
                 Statistiques
               </NavLink>
             </>
@@ -100,27 +100,27 @@ const Layout = () => {
               </div>
 
               <NavLink to="/admin" end className={navLinkClass}>
-                <span className="material-symbols-outlined text-xl">grid_view</span>
+                <span translate="no" className="material-symbols-outlined text-xl">grid_view</span>
                 Admin Dashboard
               </NavLink>
 
               <NavLink to="/admin/review" className={navLinkClass}>
-                <span className="material-symbols-outlined text-xl">rate_review</span>
+                <span translate="no" className="material-symbols-outlined text-xl">rate_review</span>
                 Révisions
               </NavLink>
 
               <NavLink to="/statistics" className={navLinkClass}>
-                <span className="material-symbols-outlined text-xl">analytics</span>
+                <span translate="no" className="material-symbols-outlined text-xl">analytics</span>
                 Statistiques
               </NavLink>
 
               <NavLink to="/admin/users" className={navLinkClass}>
-                <span className="material-symbols-outlined text-xl">manage_accounts</span>
+                <span translate="no" className="material-symbols-outlined text-xl">manage_accounts</span>
                 Utilisateurs
               </NavLink>
 
               <NavLink to="/admin/structures" className={navLinkClass}>
-                <span className="material-symbols-outlined text-xl">table_chart</span>
+                <span translate="no" className="material-symbols-outlined text-xl">table_chart</span>
                 Structures
               </NavLink>
             </>
@@ -135,7 +135,7 @@ const Layout = () => {
               onClick={() => setShowNotifications(!showNotifications)}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-500 hover:bg-slate-900/5 transition-all text-sm font-medium"
             >
-              <span className="material-symbols-outlined text-xl">notifications</span>
+              <span translate="no" className="material-symbols-outlined text-xl">notifications</span>
               Notifications
               {unreadCount > 0 && (
                 <span className="ml-auto bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
@@ -183,7 +183,7 @@ const Layout = () => {
               className="text-slate-400 hover:text-red-500 transition-colors"
               title="Déconnexion"
             >
-              <span className="material-symbols-outlined text-xl">logout</span>
+              <span translate="no" className="material-symbols-outlined text-xl">logout</span>
             </button>
           </div>
         </div>
@@ -204,6 +204,30 @@ const Layout = () => {
           <div className="min-h-full p-8 bg-white/0">
             <Outlet />
           </div>
+
+          {/* Footer */}
+          <footer className="mt-auto py-4 px-8 border-t border-slate-100 bg-white/50 backdrop-blur-sm relative z-10">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+              <div className="flex flex-col gap-1">
+                <p className="font-manrope font-bold text-slate-900 text-sm">
+                  &copy; {new Date().getFullYear()} Lilya Barkat & Oussama Derbali
+                </p>
+                <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400 font-black">
+                  Tous droits réservés &bull; Pour Les Développeurs 
+                </p>
+              </div>
+              
+              {/* <div className="flex items-center gap-8">
+                <div className="flex flex-col items-end">
+                  <span className="text-[10px] uppercase font-black text-[#016e1c] tracking-widest">Status</span>
+                  <span className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
+                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    Production Ready
+                  </span>
+                </div>
+              </div> */}
+            </div>
+          </footer>
         </main>
       </div>
     </div>

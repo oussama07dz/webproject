@@ -18,7 +18,7 @@ const Evaluation = () => {
   const [answer, setAnswer] = useState(null);
   const [comment, setComment] = useState('');
   const [uploadsList, setUploadsList] = useState([]);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
   useEffect(() => {
     fetchChamps();
@@ -71,10 +71,11 @@ const Evaluation = () => {
     setAnswer(question.user_answer?.answer ?? null);
     setComment(question.user_answer?.comment || '');
     setUploadsList(question.user_answer?.uploads || []);
+    setSelectedFiles([]);
   };
 
-  const handleSubmitAnswer = async (skip = false) => {
-    if (!skip && answer === null) {
+  const handleSubmitAnswer = async () => {
+    if (answer === null) {
       alert('Veuillez sélectionner Oui ou Non');
       return;
     }
@@ -85,20 +86,20 @@ const Evaluation = () => {
 
       const res = await answers.submit({
         question_id: question.id,
-        answer: skip ? null : answer,
+        answer: answer,
         comment: comment || null
       });
 
-      if (!skip && answer === true && selectedFile) {
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-        formData.append('answer_id', res.data.id);
-        await uploads.upload(formData);
+      if (selectedFiles.length > 0) {
+        for (let file of selectedFiles) {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('answer_id', res.data.id);
+          await uploads.upload(formData);
+        }
       }
 
-      if (selectedFile) {
-        setSelectedFile(null);
-      }
+      setSelectedFiles([]);
 
       const updatedQuestions = await evaluation.getQuestions(currentRef.id);
       setQuestions(updatedQuestions.data);
@@ -123,34 +124,50 @@ const Evaluation = () => {
     }
   };
 
+  const handleSkip = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      handleNextRef();
+    }
+  };
+
   const handleNextRef = async () => {
     setStep('refs');
   };
 
   const handleFileSelect = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
 
-    if (file.size > 10 * 1024 * 1024) {
-      alert('La taille du fichier ne doit pas dépasser 10MB');
-      return;
+    for (let file of files) {
+      if (file.size > 10 * 1024 * 1024) {
+        alert('La taille du fichier ne doit pas dépasser 10MB');
+        return;
+      }
     }
 
     if (questions[currentQuestionIndex]?.user_answer?.id) {
       try {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('answer_id', questions[currentQuestionIndex].user_answer.id);
-        const res = await uploads.upload(formData);
-        setUploadsList([...uploadsList, res.data]);
-        setSelectedFile(null);
+        const newUploads = [];
+        for (let file of files) {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('answer_id', questions[currentQuestionIndex].user_answer.id);
+          const res = await uploads.upload(formData);
+          newUploads.push(res.data);
+        }
+        setUploadsList([...uploadsList, ...newUploads]);
+        setSelectedFiles([]);
       } catch (err) {
-        console.error('Error uploading file:', err);
+        console.error('Error uploading files:', err);
         alert('Erreur lors du téléchargement');
       }
     } else {
-      setSelectedFile(file);
+      setSelectedFiles([...selectedFiles, ...files]);
     }
+
+    e.target.value = '';
   };
 
   const handleDeleteFile = async (fileId) => {
@@ -185,7 +202,7 @@ const Evaluation = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64 text-slate-500">
-        <span className="material-symbols-outlined animate-spin text-4xl mr-3">autorenew</span>
+        <span translate="no" className="material-symbols-outlined animate-spin text-4xl mr-3">autorenew</span>
         <span className="font-manrope text-xl font-bold">Chargement...</span>
       </div>
     );
@@ -200,7 +217,7 @@ const Evaluation = () => {
       <div className="flex items-center gap-3 px-1">
         <nav className="flex items-center gap-3 font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant">
           <Link to="/dashboard" className="hover:text-secondary flex items-center gap-1 transition-colors">
-            <span className="material-symbols-outlined text-base">home</span>
+            <span translate="no" className="material-symbols-outlined text-base">home</span>
             Dashboard
           </Link>
           <span className="text-slate-300">/</span>
@@ -221,32 +238,56 @@ const Evaluation = () => {
 
       {step === 'champs' && (
         <div className="space-y-8">
-          <div className="flex flex-col gap-2">
-            <h1 className="font-h1 text-h1 text-on-background">Sélectionner un Champ</h1>
-            <p className="font-body-md text-body-md text-on-surface-variant">Choisissez le domaine de compétence que vous souhaitez évaluer ou renseigner.</p>
+          <div className="flex flex-col gap-6">
+            <Link to="/dashboard" className="flex items-center gap-2 font-label-sm text-label-sm text-secondary hover:underline w-fit">
+              <span translate="no" className="material-symbols-outlined text-base">arrow_back</span>
+              Retour au tableau de bord
+            </Link>
+            <div className="flex flex-col gap-2">
+              <h1 className="font-h1 text-h1 text-on-background">Sélectionner un Champ</h1>
+              <p className="font-body-md text-body-md text-on-surface-variant">Choisissez le domaine de compétence que vous souhaitez évaluer ou renseigner.</p>
+            </div>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {champs.map(champ => (
-              <div key={champ.id} className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
-                <div className="mb-8">
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="px-3 py-1 bg-slate-100 text-slate-700 font-bold rounded-lg text-xs tracking-widest uppercase">{champ.champ_code}</span>
-                    <div className="flex items-center gap-2 text-on-surface-variant">
-                      <span className="material-symbols-outlined text-base">task</span>
-                      <span className="font-bold text-xs">{champ.answered_questions}/{champ.total_questions}</span>
+            {champs.filter(c => c.total_questions > 0).map(champ => {
+              const progressPercent = champ.total_questions > 0 ? Math.round((champ.answered_questions / champ.total_questions) * 100) : 0;
+              return (
+                <div key={champ.id} className="card hover:shadow-md transition-all duration-300 group">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <span className="text-[10px] font-bold text-primary-600 bg-primary-50 px-2 py-1 rounded uppercase tracking-wider">
+                        {champ.champ_code}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-slate-900">{progressPercent}%</p>
+                      <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">
+                        {champ.answered_questions}/{champ.total_questions} questions
+                      </p>
                     </div>
                   </div>
-                  <h3 className="font-h3 text-h3 text-on-background mb-2 group-hover:text-secondary transition-colors line-clamp-2">{champ.title}</h3>
+
+                  <h3 className="font-semibold text-slate-900 mb-4 line-clamp-2 h-12">
+                    {champ.title}
+                  </h3>
+
+                  <div className="w-full bg-slate-100 rounded-full h-1.5 mb-6">
+                    <div
+                      className="bg-primary-600 h-1.5 rounded-full transition-all duration-500"
+                      style={{ width: `${progressPercent}%` }}
+                    ></div>
+                  </div>
+
+                  <button
+                    onClick={() => fetchRefs(champ.id)}
+                    className="w-full bg-[#016e1c] hover:bg-[#0b7320] text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                  >
+                    Ouvrir le Champ
+                    <span translate="no" className="material-symbols-outlined text-xl">arrow_forward</span>
+                  </button>
                 </div>
-                <button
-                  onClick={() => fetchRefs(champ.id)}
-                  className="w-full py-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
-                >
-                  Ouvrir le Champ
-                  <span className="material-symbols-outlined text-xl">arrow_forward</span>
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -255,7 +296,7 @@ const Evaluation = () => {
         <div className="space-y-8">
           <div className="flex flex-col gap-6">
             <button onClick={() => setStep('champs')} className="flex items-center gap-2 font-label-sm text-label-sm text-secondary hover:underline w-fit">
-              <span className="material-symbols-outlined text-base">arrow_back</span>
+              <span translate="no" className="material-symbols-outlined text-base">arrow_back</span>
               Retour aux champs
             </button>
             <div className="flex flex-col gap-2">
@@ -264,27 +305,45 @@ const Evaluation = () => {
             </div>
           </div>
           <div className="grid gap-6 md:grid-cols-2">
-            {refs.map(ref => (
-              <div key={ref.id} className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-lg transition-all group">
-                <div className="mb-8">
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="px-3 py-1 bg-secondary/10 text-secondary font-bold rounded-lg text-xs tracking-widest uppercase">{ref.ref_code}</span>
-                    <div className="flex items-center gap-2 text-on-surface-variant">
-                      <span className="material-symbols-outlined text-base">assignment</span>
-                      <span className="font-bold text-xs">{ref.answered_questions}/{ref.total_questions}</span>
+            {refs.filter(r => r.total_questions > 0).map(ref => {
+              const progressPercent = ref.total_questions > 0 ? Math.round((ref.answered_questions / ref.total_questions) * 100) : 0;
+              return (
+                <div key={ref.id} className="card hover:shadow-md transition-all group">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <span className="text-[10px] font-bold text-secondary bg-secondary/10 px-2 py-1 rounded uppercase tracking-wider">
+                        {ref.ref_code}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-slate-900">{progressPercent}%</p>
+                      <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">
+                        {ref.answered_questions}/{ref.total_questions} validées
+                      </p>
                     </div>
                   </div>
-                  <h3 className="font-h3 text-h3 text-on-background line-clamp-2">{ref.title}</h3>
+
+                  <h3 className="font-semibold text-slate-900 mb-4 line-clamp-2 h-12">
+                    {ref.title}
+                  </h3>
+
+                  <div className="w-full bg-slate-100 rounded-full h-1.5 mb-6">
+                    <div
+                      className="bg-primary-600 h-1.5 rounded-full transition-all duration-500"
+                      style={{ width: `${progressPercent}%` }}
+                    ></div>
+                  </div>
+
+                  <button
+                    onClick={() => fetchQuestions(ref.id, ref)}
+                    className="w-full bg-[#016e1c] hover:bg-[#0b7320] text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                  >
+                    Voir les Questions
+                    <span translate="no" className="material-symbols-outlined text-xl">list_alt</span>
+                  </button>
                 </div>
-                <button
-                  onClick={() => fetchQuestions(ref.id, ref)}
-                  className="w-full py-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
-                >
-                  Voir les Questions
-                  <span className="material-symbols-outlined text-xl">list_alt</span>
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -296,7 +355,7 @@ const Evaluation = () => {
               onClick={() => setStep('refs')}
               className="flex items-center gap-2 font-label-sm text-label-sm text-secondary hover:underline"
             >
-              <span className="material-symbols-outlined text-base">arrow_back</span>
+              <span translate="no" className="material-symbols-outlined text-base">arrow_back</span>
               Références
             </button>
             <div className="flex gap-3">
@@ -319,7 +378,7 @@ const Evaluation = () => {
 
           <div className="bg-white p-10 rounded-3xl shadow-xl border border-slate-100 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none">
-              <span className="material-symbols-outlined text-[120px]">quiz</span>
+              <span translate="no" className="material-symbols-outlined text-[120px]">quiz</span>
             </div>
 
             <div className="relative z-10 mb-10">
@@ -336,7 +395,7 @@ const Evaluation = () => {
                       currentQuestion.user_answer.status === 'rejected' ? 'bg-[#fff1f0] text-[#cf1322] border border-[#ffa39e]' :
                         'bg-[#fffbe6] text-[#d48806] border border-[#ffe58f]'
                     }`}>
-                    <span className="material-symbols-outlined text-base">
+                    <span translate="no" className="material-symbols-outlined text-base">
                       {currentQuestion.user_answer.status === 'approved' ? 'verified' :
                         currentQuestion.user_answer.status === 'rejected' ? 'cancel' : 'pending'}
                     </span>
@@ -348,7 +407,7 @@ const Evaluation = () => {
 
               {currentQuestion.user_answer?.admin_comment && (
                 <div className="mt-6 p-6 bg-red-50 border border-red-200 rounded-2xl flex gap-4">
-                  <span className="material-symbols-outlined text-red-600">report</span>
+                  <span translate="no" className="material-symbols-outlined text-red-600">report</span>
                   <div>
                     <strong className="font-manrope block mb-1">Motif du rejet par l'administration :</strong>
                     <p className="text-red-700 font-body-md text-body-md">{currentQuestion.user_answer.admin_comment}</p>
@@ -367,7 +426,7 @@ const Evaluation = () => {
                       : 'border-slate-100 hover:border-secondary/30 text-on-surface-variant'
                     } ${isApproved ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                 >
-                  <span className="material-symbols-outlined text-3xl">{answer === true ? 'radio_button_checked' : 'radio_button_unchecked'}</span>
+                  <span translate="no" className="material-symbols-outlined text-3xl">{answer === true ? 'radio_button_checked' : 'radio_button_unchecked'}</span>
                   <span className="font-manrope font-bold text-xl uppercase tracking-widest">Oui</span>
                 </button>
                 <button
@@ -377,7 +436,7 @@ const Evaluation = () => {
                       : 'border-slate-100 hover:border-red-200 text-on-surface-variant'
                     } ${isApproved ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                 >
-                  <span className="material-symbols-outlined text-3xl">{answer === false ? 'radio_button_checked' : 'radio_button_unchecked'}</span>
+                  <span translate="no" className="material-symbols-outlined text-3xl">{answer === false ? 'radio_button_checked' : 'radio_button_unchecked'}</span>
                   <span className="font-manrope font-bold text-xl uppercase tracking-widest">Non</span>
                 </button>
               </div>
@@ -397,7 +456,7 @@ const Evaluation = () => {
               </div>
 
               {/* File Uploads */}
-              {answer === true && (
+              {answer !== null && (
                 <div className="space-y-4">
                   <label className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest mb-3 block px-1">
                     Documents justificatifs
@@ -406,12 +465,13 @@ const Evaluation = () => {
                     <div className="relative group">
                       <input
                         type="file"
+                        multiple
                         onChange={handleFileSelect}
                         className="absolute inset-0 opacity-0 cursor-pointer z-10"
                         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.xls,.xlsx"
                       />
                       <div className="w-full py-8 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center gap-3 group-hover:border-secondary group-hover:bg-secondary/5 transition-all">
-                        <span className="material-symbols-outlined text-4xl text-slate-400 group-hover:text-secondary group-hover:scale-110 transition-all">cloud_upload</span>
+                        <span translate="no" className="material-symbols-outlined text-4xl text-slate-400 group-hover:text-secondary group-hover:scale-110 transition-all">cloud_upload</span>
                         <p className="font-manrope font-bold text-slate-500 group-hover:text-secondary">Déposez un fichier ou cliquez pour parcourir</p>
                         <p className="text-xs text-slate-400">PDF, IMAGES, DOCS (Max 10MB)</p>
                       </div>
@@ -419,13 +479,13 @@ const Evaluation = () => {
                   )}
 
                   {/* Uploads List */}
-                  {(uploadsList.length > 0 || selectedFile) && (
+                  {(uploadsList.length > 0 || selectedFiles.length > 0) && (
                     <div className="grid gap-3">
                       {uploadsList.map(file => (
                         <div key={file.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100 group">
                           <div className="flex items-center gap-4">
                             <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                              <span className="material-symbols-outlined text-slate-400">description</span>
+                              <span translate="no" className="material-symbols-outlined text-slate-400">description</span>
                             </div>
                             <div>
                               <p className="font-manrope font-bold text-sm text-on-background truncate max-w-[200px]">{file.original_name}</p>
@@ -437,30 +497,34 @@ const Evaluation = () => {
                               onClick={() => handleDeleteFile(file.id)}
                               className="w-10 h-10 rounded-xl hover:bg-red-50 text-slate-300 hover:text-red-500 transition-all flex items-center justify-center"
                             >
-                              <span className="material-symbols-outlined text-2xl">delete</span>
+                              <span translate="no" className="material-symbols-outlined text-2xl">delete</span>
                             </button>
                           )}
                         </div>
                       ))}
-                      {selectedFile && (
-                        <div className="flex items-center justify-between p-4 bg-secondary/5 rounded-xl border border-secondary/20 animate-pulse">
+                      {selectedFiles.map((file, idx) => (
+                        <div key={`sel-${idx}`} className="flex items-center justify-between p-4 bg-secondary/5 rounded-xl border border-secondary/20 animate-pulse">
                           <div className="flex items-center gap-4">
                             <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                              <span className="material-symbols-outlined text-secondary">upload_file</span>
+                              <span translate="no" className="material-symbols-outlined text-secondary">upload_file</span>
                             </div>
                             <div>
-                              <p className="font-manrope font-bold text-sm text-secondary truncate max-w-[200px]">{selectedFile.name}</p>
+                              <p className="font-manrope font-bold text-sm text-secondary truncate max-w-[200px]">{file.name}</p>
                               <span className="text-[10px] uppercase font-black text-secondary/60 tracking-widest block">Prêt à l'envoi</span>
                             </div>
                           </div>
                           <button
-                            onClick={() => setSelectedFile(null)}
+                            onClick={() => {
+                              const newFiles = [...selectedFiles];
+                              newFiles.splice(idx, 1);
+                              setSelectedFiles(newFiles);
+                            }}
                             className="w-10 h-10 rounded-xl hover:bg-red-50 text-red-500 transition-all flex items-center justify-center"
                           >
-                            <span className="material-symbols-outlined text-2xl">cancel</span>
+                            <span translate="no" className="material-symbols-outlined text-2xl">cancel</span>
                           </button>
                         </div>
-                      )}
+                      ))}
                     </div>
                   )}
                 </div>
@@ -473,19 +537,19 @@ const Evaluation = () => {
                   disabled={currentQuestionIndex === 0}
                   className="px-8 py-4 flex items-center gap-3 font-manrope font-bold text-slate-500 hover:text-slate-900 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                 >
-                  <span className="material-symbols-outlined">arrow_back_ios</span>
+                  <span translate="no" className="material-symbols-outlined">arrow_back_ios</span>
                   Précédent
                 </button>
                 <div className="flex gap-4">
                   <button
-                    onClick={() => handleSubmitAnswer(true)}
+                    onClick={handleSkip}
                     disabled={saving}
                     className="px-8 py-4 font-manrope font-bold text-slate-400 hover:text-slate-900 transition-all"
                   >
                     Passer la question
                   </button>
                   <button
-                    onClick={() => handleSubmitAnswer(false)}
+                    onClick={() => handleSubmitAnswer()}
                     disabled={saving || isApproved}
                     className="px-10 py-4 bg-secondary text-white font-bold rounded-2xl shadow-lg hover:shadow-secondary/30 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-3"
                   >

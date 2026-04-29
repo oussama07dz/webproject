@@ -38,14 +38,18 @@ const Dashboard = () => {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64">Chargement...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <span>Chargement...</span>
+      </div>
+    );
   }
 
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-white-900">Dashboard</h1>
+        <p className="text-white-500 mt-1">
           Bienvenue, {getRoleName(user?.role)} - {user?.username}
         </p>
       </div>

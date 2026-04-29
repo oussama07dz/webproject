@@ -8,8 +8,26 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showLegal, setShowLegal] = useState(null);
+  
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const legalContent = {
+    privacy: {
+      title: "Politique de Confidentialité",
+      content: "Nous collectons uniquement les informations nécessaires au fonctionnement de la plateforme d'évaluation (identifiants, réponses aux questionnaires, documents justificatifs). Vos données sont stockées de manière sécurisée et ne sont jamais partagées avec des tiers sans votre consentement explicite."
+    },
+    terms: {
+      title: "Conditions d'Utilisation",
+      content: "En utilisant cette plateforme, vous vous engagez à fournir des informations exactes et véridiques. Les documents téléchargés doivent être conformes aux exigences de l'évaluation. L'accès est strictement réservé au personnel autorisé ."
+    }
+  };
+
+  const handleLegalClick = (e, type) => {
+    e.preventDefault();
+    setShowLegal(type);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -144,16 +162,38 @@ const Login = () => {
       </main>
 
       {/* Global Footer */}
-      <footer className="relative z-10 w-full px-12 py-8 flex flex-col md:flex-row justify-between items-center gap-4">
+      <footer className="relative z-10 w-full px-12 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="text-[11px] font-label uppercase tracking-widest text-white/70">
-          © 2024 Sovereign Editorial. Precision in Evaluation.
+          © {new Date().getFullYear()} Oussama Derbali & Lilya Barkat. Tous droits réservés.
         </div>
         <nav className="flex flex-wrap justify-center items-center gap-8">
-          <a href="#" className="text-[11px] font-label uppercase tracking-widest text-white/80 hover:text-white transition-colors">Privacy Policy</a>
-          <a href="#" className="text-[11px] font-label uppercase tracking-widest text-white/80 hover:text-white transition-colors">Terms of Service</a>
-          <a href="#" className="text-[11px] font-label uppercase tracking-widest text-white/80 hover:text-white transition-colors">Security</a>
+          <a href="#" onClick={(e) => handleLegalClick(e, 'privacy')} className="text-[11px] font-label uppercase tracking-widest text-white/80 hover:text-white transition-colors">Privacy Policy</a>
+          <a href="#" onClick={(e) => handleLegalClick(e, 'terms')} className="text-[11px] font-label uppercase tracking-widest text-white/80 hover:text-white transition-colors">Terms of Service</a>
         </nav>
       </footer>
+
+      {/* Simple Legal Modal */}
+      {showLegal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl space-y-6">
+            <div className="flex justify-between items-center">
+              <h3 className="text-xl font-bold text-slate-900">{legalContent[showLegal].title}</h3>
+              <button onClick={() => setShowLegal(null)} className="text-slate-400 hover:text-slate-600">
+                <span translate="no" className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <p className="text-slate-600 text-sm leading-relaxed">
+              {legalContent[showLegal].content}
+            </p>
+            <button 
+              onClick={() => setShowLegal(null)}
+              className="w-full py-3 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors"
+            >
+              Compris
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

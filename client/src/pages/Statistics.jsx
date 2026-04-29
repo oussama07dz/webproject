@@ -28,7 +28,7 @@ const Statistics = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64 text-slate-500">
-        <span className="material-symbols-outlined animate-spin text-4xl mr-3">autorenew</span>
+        <span translate="no" className="material-symbols-outlined animate-spin text-4xl mr-3">autorenew</span>
         <span className="font-manrope text-xl font-bold">Chargement...</span>
       </div>
     );
@@ -67,7 +67,7 @@ const Statistics = () => {
     }, {
       label: 'Total questions',
       data: overview?.domains?.map(d => d.questions_count) || [],
-      backgroundColor: '#e2e8f0'
+      backgroundColor: '#9bc3d1'
     }]
   };
 
